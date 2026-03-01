@@ -1,2 +1,11 @@
 Extension to manage persistent storage of chrome tab groups
-- [ ] 
+- [x] Summon test group
+- [x] Persist existing group to storage
+- [x] Create an interface to communicate with storage
+- Develop popup UI to manage stored groups:
+  - [ ] Auto-sync checkbox to sync group from time to time
+  - [ ] Delete group button
+  - [ ] Show/edit group tab
+  - [ ] Spawn group button
+  - [ ] Sync group button
+  - [ ] Improve current group display
