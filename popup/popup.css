@@ -13,10 +13,61 @@
   flex-direction: row;
   gap: 10px;
   display: none;
+  width: 100%;
 }
 
 #current-group-title {
   padding: 10px;
   border-radius: 5px;
   font-weight: bold;
+}
+
+#groups-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+#search-groups-container {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
+}
+
+#search-groups-input {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #aef55c;
+}
+
+#groups-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+.loading {
+  filter: blur(10px);
+  animation: loading 0.5s infinite linear;
+}
+@keyframes loading {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.group-item {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  width: 100%;
 }

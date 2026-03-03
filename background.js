@@ -1,6 +1,4 @@
-import StorageApi from './storageApi.js'
-
-const storage = new StorageApi()
+import storage from './storageApi.js'
 
 // Set current group when active tab changes
 chrome.tabs.onActivated.addListener((activeInfo) => {
@@ -28,10 +26,10 @@ async function spawnGroup(group) {
 }
 
 // Handle message events
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   try {
-    handleMessage(message)
-    sendResponse({ success: true })
+    const data = handleMessage(message)
+    sendResponse({ success: true, data })
   } catch (error) {
     sendResponse({ success: false, error: error.message })
   }
@@ -40,6 +38,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 function handleMessage(message) {
   if (message.type === 'syncGroup') return storage.syncGroup(message.data)
   if (message.type === 'spawnGroup') return spawnGroup(message.data)
+  if (message.type === 'searchGroups') return storage.searchGroups(message.data)
 
-  throw new Error('Unknown message type: ' + message.type)
+  throw new Error(`Unknown message type: ${message.type}`)
 }

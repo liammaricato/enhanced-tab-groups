@@ -13,7 +13,13 @@
             <span id="current-group-title"></span>
             <button id="sync-group-button">Sync Group</button>
         </div>
-        <button id="spawn-group-button">Spawn Test Group</button>
+        <div id="groups-container">
+            <div id="search-groups-container">
+                <input type="text" id="search-groups-input" placeholder="Search groups">
+            </div>
+            <!-- Dynamically loaded groups list -->
+            <div id="groups-list" class="loading"></div>
+        </div>
     </div>
     <script src="popup.js"></script>
 </body>
