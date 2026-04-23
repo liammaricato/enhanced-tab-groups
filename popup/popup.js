@@ -25,13 +25,13 @@ function setCurrentGroup(group) {
 // Load all groups on startup
 chrome.storage.local.get('groups').then(result => {
   allGroups = JSON.parse(result.groups)
-  loadGroups()
+  loadGroups(Object.values(allGroups))
 })
 
-function loadGroups() {
+function loadGroups(groups) {
   groupsListEl.innerHTML = ''
   groupsListEl.classList.add('loading')
-  Object.values(allGroups).forEach(group => insertGroupItem(group))
+  groups.forEach(group => insertGroupItem(group))
   groupsListEl.classList.remove('loading')
 }
 
