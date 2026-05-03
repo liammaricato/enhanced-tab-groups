@@ -1,24 +1,14 @@
+import storage from './storage.js'
+
 const GROUPS_KEY = 'groups'
 
-let groups = await storage.init(GROUPS_KEY, {})
+let groups
 let sessionGroups
 
-// async function syncGroup(rawGroup) {
-//   let group = sessionGroups[rawGroup.id]
-  
-//   if (!group) {
-//     syncSession()
-//     group = sessionGroups[rawGroup.id]
-    
-//     if (!group) throw new Error(`Group ${rawGroup.id} not found in session`)
-//   }
-
-//   await group.upsert(rawGroup)
-//   sessionGroups[rawGroup.id] = group
-// }
-
-function syncGroup(group) {
-  group.save()
+async function startup() {
+  groups = await storage.init(GROUPS_KEY, {})
+  // sessionGroups = await loadSessionGroups(groups)
+  sessionGroups = {}
 }
 
 async function getCurrentGroup() {
@@ -28,12 +18,21 @@ async function getCurrentGroup() {
   return fetchGroup(tab.groupId)
 }
 
+async function mostRecentGroups() {
+  return Object.values(groups).sort((a, b) => b.lastSyncAt - a.lastSyncAt).slice(0, 5)
+}
+
+function syncGroup(group) {
+  group.save()
+}
+
+
 async function fetchGroup(groupId) {
   let group = sessionGroups[groupId]
   if (group) return group
 
   groupData = await chrome.tabGroups.get(groupId)
-  groupData.tab_urls = await getTabUrls(groupId)
+  groupData.tabUrls = await getTabUrls(groupId)
   
   group = await fetchGroupFromStorage(groupData)
   if (group) return group
@@ -43,8 +42,25 @@ async function fetchGroup(groupId) {
   return group
 }
 
+async function loadSessionGroups(groups) {
+  let openedSessionGroups = await chrome.tabGroups.query({})
+  
+  return openedSessionGroups.reduce((acc, group) => {
+    group = new Group(group)
+
+    groups.forEach(group => {
+      if (group.isEqual(group)) {
+        acc[group.id] = group
+        return acc
+      }
+    })
+
+    return acc
+  }, {})
+}
+
 async function spawnGroup(group) {
-  const tabs = await Promise.all(group.tab_urls.map(url => {
+  const tabs = await Promise.all(group.tabUrls.map(url => {
     return chrome.tabs.create({ url: url })
   }))
 
@@ -70,8 +86,10 @@ async function searchGroups(query) {
 }
 
 export default {
-  syncGroup,
-  spawnGroup,
-  syncSession,
+  startup,
   getCurrentGroup,
+  mostRecentGroups,
+  syncGroup,
+  searchGroups,
+  spawnGroup,
 }

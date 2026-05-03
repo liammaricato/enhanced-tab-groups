@@ -1,6 +1,7 @@
-import { getCurrentGroup, syncGroup, spawnGroup, searchGroups } from './groups.js'
+import groupsApi from './groups.js'
 
-// Handle message events
+groupsApi.startup()
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   handleMessage(message).then(data => {
     sendResponse({ success: true, data })
@@ -9,11 +10,9 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   })
 })
 
-async function handleMessage(message) {
-  if (message.type === 'getCurrentGroup') return getCurrentGroup()
-  if (message.type === 'syncGroup') return syncGroup(message.data)
-  if (message.type === 'spawnGroup') return spawnGroup(message.data)
-  if (message.type === 'searchGroups') return searchGroups(message.data)
-
-  throw new Error(`Unknown message type: ${message.type}`)
+function handleMessage(message) {
+  const handler = groupsApi[message.type]
+  if (!handler) throw new Error(`Unknown message type: ${message.type}`)
+  
+  return handler(message.data)
 }

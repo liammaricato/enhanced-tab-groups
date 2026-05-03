@@ -6,13 +6,14 @@ const groupsListEl = document.getElementById('groups-list')
 const searchGroupsInputEl = document.getElementById('search-groups-input')
 
 let currentGroup
-let allGroups
 
-// Load current group on startup
-chrome.storage.sync.get('currentGroup')
-	.then(result => setCurrentGroup(result.currentGroup))
+function sendMessage(type, data) {
+  return chrome.runtime.sendMessage({ type, data });
+}
 
-// Set current group in UI
+sendMessage("getCurrentGroup").then(group => setCurrentGroup(group))
+loadMostRecentGroups()
+
 function setCurrentGroup(group) {
 	if (!group) return currentGroupEl.style.display = 'none'
 
@@ -22,11 +23,9 @@ function setCurrentGroup(group) {
 	currentGroupTitleEl.style.backgroundColor = group.color
 }
 
-// Load all groups on startup
-chrome.storage.local.get('groups').then(result => {
-  allGroups = JSON.parse(result.groups)
-  loadGroups(Object.values(allGroups))
-})
+function loadMostRecentGroups(groups) {
+  sendMessage("mostRecentGroups").then(groups => loadGroups(groups))
+}
 
 function loadGroups(groups) {
   groupsListEl.innerHTML = ''
@@ -41,10 +40,10 @@ syncGroupButtonEl.addEventListener('click', () => {
 	syncGroupButtonEl.disabled = true
 	syncGroupButtonEl.textContent = 'Syncing...'
 	
-	chrome.runtime.sendMessage({ type: 'syncGroup', data: currentGroup }, (response) => {
+	sendMessage("syncGroup", currentGroup).then(response => {
 		if (response.success) {
 			syncGroupButtonEl.textContent = 'Synced'
-      loadGroups()
+      loadMostRecentGroups()
 		} else {
 			syncGroupButtonEl.textContent = 'Sync error'
 		}
@@ -54,16 +53,18 @@ syncGroupButtonEl.addEventListener('click', () => {
 // Search groups input change handler
 // Generates a list of groups based on the search query
 searchGroupsInputEl.addEventListener('input', (event) => {
-  setTimeout(() => {
+  if (window._searchDebounce) clearTimeout(window._searchDebounce);
+  
+  window._searchDebounce = setTimeout(() => {
     groupsListEl.classList.add('loading')
     const query = event.target.value
-    chrome.runtime.sendMessage({ type: 'searchGroups', data: query }, (response) => {
+    sendMessage("searchGroups", query).then(response => {
       groupsListEl.innerHTML = ''
       console.log(response)
       response.data.forEach(group => insertGroupItem(group))
       groupsListEl.classList.remove('loading')
     })
-  }, 1000)
+  }, 500);
 })
 
 function insertGroupItem(group) {

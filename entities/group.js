@@ -7,29 +7,33 @@ export default class Group {
     this.id = groupData.id || new Date().getTime()
     this.title = groupData.title
     this.color = groupData.color
-    this.tab_urls = groupData.tab_urls
-    this.lastSyncedAt = groupData.lastSyncedAt || null
+    this.tabUrls = groupData.tabUrls
+    this.lastSyncAt = groupData.lastSyncAt || null
   }
 
   save() {
-    this.lastSyncedAt = new Date()
+    this.lastSyncAt = new Date()
     storage.saveById(GROUPS_KEY, this.id, this)
   }
 
   update(groupData) {
     this.title = groupData.title
     this.color = groupData.color
-    this.tab_urls = groupData.tab_urls
+    this.tabUrls = groupData.tabUrls
+  }
+
+  isEqual(other) {
+    return this.diff(other).every(diff => diff === false)
   }
 
   diff(other) {
-    tab_urls_diff = this.tab_urls.length !== other.tab_urls.length ||
-                    this.tab_urls.some((url, index) => url !== other.tab_urls[index])
+    tabUrlsDiff = this.tabUrls.length !== other.tabUrls.length ||
+                    this.tabUrls.some((url, index) => url !== other.tabUrls[index])
 
     return {
       title: this.title !== other.title,
       color: this.color !== other.color,
-      tab_urls: tab_urls_diff,
+      tabUrls: tabUrlsDiff,
     }
   }
 }
